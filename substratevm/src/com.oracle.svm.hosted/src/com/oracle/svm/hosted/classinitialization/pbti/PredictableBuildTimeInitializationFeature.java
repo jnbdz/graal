@@ -242,11 +242,6 @@ public class PredictableBuildTimeInitializationFeature implements InternalFeatur
 
     protected static final String[] EXCLUDED_ROOTS = {
                     /*
-                     * Field nativeInstrumentedFilterState contains ByteBuffer,
-                     * which pbti can find, and is disallowed by DisallowedImageHeapObjects check.
-                     */
-                    "com.oracle.truffle.runtime.debug.JFRListener",
-                    /*
                      * These generated Truffle test classes register libraries whose deliberately
                      * invalid default exports have no generated implementation. They must not be
                      * initialized as new PBTI roots.
@@ -257,17 +252,6 @@ public class PredictableBuildTimeInitializationFeature implements InternalFeatur
                     "com.oracle.truffle.api.library.test.BaseClassGen",
                     "com.oracle.truffle.api.library.test.SubClassWithRedeclarationGen",
                     "com.oracle.truffle.api.library.test.SubClassNoRedeclarationGen",
-                    /*
-                     * The static initializer creates a polyglot Context, which enters the
-                     * preinitialized context on the image-builder thread. The same failure is
-                     * exposed by Preserve even when InitializeNewRoots is disabled. Reproducer:
-                     *
-                     * cd graal/compiler
-                     * mx benchmark 'truffle:*' -- --jvm native-image --jvm-config default \
-                     * -- org.graalvm.truffle.benchmark.interop.JavaInteropSpeedBench
-                     */
-                    "org.graalvm.truffle.benchmark.interop.JavaInteropSpeedBench",
-                    "org.graalvm.truffle.benchmark.interop.generated.JavaInteropSpeedBench",
                     /*
                      * Initializing the data classes registers LLVMManagedForeignBulkAccess exports
                      * whose nodes cannot access LLVMNode from the unnamed module. Managed node
@@ -296,14 +280,7 @@ public class PredictableBuildTimeInitializationFeature implements InternalFeatur
                      *  jdk.graal.compiler.truffle.test.GR75881Test --build-args --macro:truffle \
                      *  --language:nfi -H:-SupportCompileInIsolates
                      */
-                    "jdk.graal.compiler.truffle.test.builtins.",
-                    /*
-                     * JCodings assigns encoding indexes while its encoding singleton classes are
-                     * initialized. Initializing these classes as new PBTI roots can do so before
-                     * JCodingsProviderImpl registers them in its expected order, breaking its index
-                     * consistency check.
-                     */
-                    "org.graalvm.shadowed.org.jcodings.specific.",
+                    // "jdk.graal.compiler.truffle.test.builtins.",
     };
 
     /**
@@ -886,10 +863,9 @@ public class PredictableBuildTimeInitializationFeature implements InternalFeatur
                             .sorted(Comparator.comparing(ResolvedJavaType::getName))
                             .toList();
             for (ResolvedJavaType type : types) {
-                if (isExcludedRoot(type)) {
-                    // jdk.graal.compiler.truffle.test.builtins export error
-                    continue;
-                }
+                // if (isExcludedRoot(type)) {
+                // continue;
+                // }
                 processUninitializedRoot(type);
             }
         }

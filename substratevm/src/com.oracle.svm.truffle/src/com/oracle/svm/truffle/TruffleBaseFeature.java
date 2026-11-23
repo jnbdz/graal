@@ -367,6 +367,9 @@ public final class TruffleBaseFeature implements InternalFeature {
 
     @Override
     public void afterRegistration(AfterRegistrationAccess a) {
+        JVMCIRuntimeClassInitializationSupport.singleton().initializeAtRunTime("com.oracle.truffle.runtime.debug.JFRListener",
+                        "Contains native JFR filter state that must be allocated at image run time");
+
         /*
          * The actual check is now performed in the Truffle API (TruffleAPIFeature). This fallback
          * branch can be removed once all supported Truffle versions include TruffleAPIFeature.
